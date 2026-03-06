@@ -1,6 +1,6 @@
 # Meter MCP Server
 
-Connect your coding agent to [Meter](https://meter.dev) — pay-per-thought AI billing.
+Access your [meter.chat](https://meter.chat) decisions, blueprints, and debates from your IDE.
 
 Works with Cursor, Claude Code, Codex, Windsurf, and any MCP-compatible tool.
 
@@ -8,7 +8,7 @@ Works with Cursor, Claude Code, Codex, Windsurf, and any MCP-compatible tool.
 
 ### 1. Get your API key
 
-Sign up at [meter.dev](https://meter.dev) and copy your API key from the dashboard.
+Sign up at [meter.chat](https://meter.chat) and copy your API key from Settings → API.
 
 ### 2. Configure your editor
 
@@ -31,8 +31,6 @@ Open Settings → MCP Servers → Add Server:
 ```
 
 #### Claude Code
-
-Run:
 
 ```bash
 claude mcp add meter -- npx -y @meter/mcp-server
@@ -82,24 +80,6 @@ Add to your Codex MCP configuration:
 
 Open Settings → MCP → Add Server with the same JSON config as Cursor above.
 
-#### Replit
-
-Add to your `.replit` MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "meter": {
-      "command": "npx",
-      "args": ["-y", "@meter/mcp-server"],
-      "env": {
-        "METER_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
 #### Any MCP client
 
 The server uses stdio transport. Spawn it as a child process:
@@ -112,26 +92,36 @@ METER_API_KEY="your-api-key" npx @meter/mcp-server
 
 | Tool | What it does |
 |------|-------------|
-| `get_usage` | Check usage and costs, broken down by model |
-| `get_balance` | Check remaining balance and budget status |
-| `get_projects` | List all projects with usage summaries |
-| `create_project` | Create a new project for tracking |
-| `set_budget` | Set a spending limit on a project |
-| `get_cost_estimate` | Estimate cost before making a model call |
+| `get_decisions` | List/search your decisions log |
+| `get_decision` | Fetch full detail of a single decision |
+| `get_blueprints` | List/search your blueprints |
+| `get_blueprint` | Fetch full content of a blueprint |
+| `get_debates` | List debate summaries with synthesis |
+| `search` | Full-text search across all artifact types |
+| `create_decision` | Record a new decision from your IDE |
 
 ## Resources
 
 | Resource | URI | What it provides |
 |----------|-----|-----------------|
-| Account | `meter://account` | Account details and plan |
-| Pricing | `meter://pricing` | Per-model pricing table |
-| Usage summary | `meter://usage/summary` | Dashboard-style usage overview |
+| Recent decisions | `meter://decisions/recent` | Last 10 decisions for ambient context |
+| Recent blueprints | `meter://blueprints/recent` | Last 10 blueprints for ambient context |
+| Profile | `meter://profile` | Account info and content counts |
+
+## Example usage
+
+Once installed, ask your coding agent things like:
+
+- "What did I decide about the auth system?"
+- "Show me the blueprint for the API architecture"
+- "Search my meter.chat for anything about database schema"
+- "Record a decision: we're using PostgreSQL for the user store because..."
 
 ## Environment variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `METER_API_KEY` | Yes | Your Meter API key |
+| `METER_API_KEY` | Yes | Your meter.chat API key |
 | `METER_API_URL` | No | Override API base URL (for development) |
 
 ## Development

@@ -3,21 +3,22 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { createClient } from "./client.js";
-import { registerGetUsage } from "./tools/get-usage.js";
-import { registerGetBalance } from "./tools/get-balance.js";
-import { registerGetProjects } from "./tools/get-projects.js";
-import { registerCreateProject } from "./tools/create-project.js";
-import { registerSetBudget } from "./tools/set-budget.js";
-import { registerGetCostEstimate } from "./tools/get-cost-estimate.js";
-import { registerAccountResource } from "./resources/account.js";
-import { registerPricingResource } from "./resources/pricing.js";
-import { registerUsageSummaryResource } from "./resources/usage-summary.js";
+import { registerGetDecisions } from "./tools/get-decisions.js";
+import { registerGetDecision } from "./tools/get-decision.js";
+import { registerGetBlueprints } from "./tools/get-blueprints.js";
+import { registerGetBlueprint } from "./tools/get-blueprint.js";
+import { registerGetDebates } from "./tools/get-debates.js";
+import { registerSearch } from "./tools/search.js";
+import { registerCreateDecision } from "./tools/create-decision.js";
+import { registerRecentDecisionsResource } from "./resources/recent-decisions.js";
+import { registerRecentBlueprintsResource } from "./resources/recent-blueprints.js";
+import { registerProfileResource } from "./resources/profile.js";
 
 const apiKey = process.env.METER_API_KEY;
 
 if (!apiKey) {
   console.error(
-    "METER_API_KEY environment variable is required. Get your key at https://meter.dev"
+    "METER_API_KEY environment variable is required. Get your key at https://meter.chat/settings/api"
   );
   process.exit(1);
 }
@@ -32,18 +33,21 @@ const server = new McpServer({
   version: "0.1.0",
 });
 
-// Tools
-registerGetUsage(server, client);
-registerGetBalance(server, client);
-registerGetProjects(server, client);
-registerCreateProject(server, client);
-registerSetBudget(server, client);
-registerGetCostEstimate(server, client);
+// Tools — read
+registerGetDecisions(server, client);
+registerGetDecision(server, client);
+registerGetBlueprints(server, client);
+registerGetBlueprint(server, client);
+registerGetDebates(server, client);
+registerSearch(server, client);
+
+// Tools — write
+registerCreateDecision(server, client);
 
 // Resources
-registerAccountResource(server, client);
-registerPricingResource(server, client);
-registerUsageSummaryResource(server, client);
+registerRecentDecisionsResource(server, client);
+registerRecentBlueprintsResource(server, client);
+registerProfileResource(server, client);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
