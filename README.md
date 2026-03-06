@@ -1,8 +1,8 @@
 # Meter
 
-**Think with AI. Pay per thought.**
+**Pay per thought AI.**
 
-[meter.chat](https://meter.chat) is an AI chat app for builders. You chat with AI, run multi-model debates, record structured decisions, and generate architectural blueprints — all on a pay-per-thought basis. No subscriptions. No tiers. Just thinking.
+[meter.chat](https://meter.chat) is an AI chat app for builders. You chat with AI, run multi-model debates, record structured decisions, and generate architectural blueprints — all on a pay-per-thought basis. No subscriptions. No tiers. Just freedom of thought.
 
 ## What makes Meter different
 
@@ -51,7 +51,7 @@ Your coding agent (Cursor / Claude Code / Codex)
 
 See the [MCP server README](./mcp-server/README.md) for editor-specific instructions.
 
-### 3. Code with context
+### 3. Code with context and memory
 
 Your agent can now pull your decisions, blueprints, and debates. Ask it "what did I decide about the auth system?" and it'll check your meter.chat history.
 
@@ -72,9 +72,7 @@ meter/
 
 ## Philosophy
 
-Your thinking should follow you into your code. Decisions made in conversation should be available when implementing. The IDE should know what you already figured out.
-
-We build in public. Our architecture decisions, our thinking, our trade-offs — all in this repo.
+Your code should follow your thinking. Too many AI coded apps end up with technical debt because they jump to building before thiking. Decisions made in conversation should be available when implementing. The IDE should know what you already figured out.
 
 ## Open source
 
@@ -91,4 +89,4 @@ Contributions welcome. Add a tool, improve a resource, support a new editor. See
 
 ---
 
-Made by the Meter team. Think with AI. Pay per thought.
+Made by the Meter team. Think in Meter. Pay per thought.
