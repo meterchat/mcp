@@ -1,7 +1,7 @@
 {
   "name": "@meter/mcp-server",
   "version": "0.1.0",
-  "description": "Meter MCP server — connect your coding agent to Meter for pay-per-thought AI billing",
+  "description": "Meter MCP server — access your meter.chat decisions, blueprints, and debates from your IDE",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -33,8 +33,11 @@
   "keywords": [
     "mcp",
     "meter",
+    "meter-chat",
     "ai",
-    "billing",
+    "decisions",
+    "blueprints",
+    "debates",
     "cursor",
     "claude-code",
     "codex"

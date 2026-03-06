@@ -11,19 +11,19 @@ A log of architectural and product decisions, with context. We write these down 
 
 ### Context
 
-We need developers to connect their coding agents to Meter. The MCP server is the bridge. We could keep it closed-source and distribute it as a binary, or open-source it.
+We need users to access their meter.chat thinking artifacts (decisions, blueprints, debates) from their IDE. The MCP server is the bridge. We could keep it closed-source and distribute it as a binary, or open-source it.
 
 ### Decision
 
-Open-source the MCP server under MIT. Keep the core platform (API, billing engine, dashboard) private.
+Open-source the MCP server under MIT. Keep the core platform (meter.chat, API, billing) private.
 
 ### Why
 
 - The MCP server is small, self-contained, and useful on its own
-- It shows developers exactly how to connect to Meter — trust through transparency
-- Someone cannot clone Meter from the MCP server code alone
+- It shows developers exactly how to connect to meter.chat — trust through transparency
+- Someone cannot clone meter.chat from the MCP server code alone
 - It invites contribution — developers can add tools and resources without touching our main codebase
-- Every MCP server install is a funnel to the product (you need a Meter account for it to work)
+- Every MCP server install is a funnel to the product (you need a meter.chat account for it to work)
 
 We are open-sourcing the connector, not the product. That is the right boundary.
 
@@ -92,7 +92,7 @@ Single environment variable: `METER_API_KEY`.
 
 - Every editor's MCP config already supports setting env vars
 - No config files to manage, find, or accidentally commit
-- Consistent with how developers already manage API keys (OpenAI, Anthropic, etc.)
+- Consistent with how developers already manage API keys
 - The server should start in < 1 second — no interactive auth flows
 - We can add OAuth or `meter login` later as a convenience layer, not a requirement
 
@@ -116,8 +116,8 @@ Pure pass-through. No local state, no caching.
 - Simpler to reason about — the server is a translation layer, not a data store
 - No stale data issues — every tool call hits the API for fresh data
 - No persistence to manage — no SQLite, no files, no cleanup
+- Decisions and blueprints change infrequently, so freshness is cheap and caching is unnecessary
 - If the API is down, the server fails clearly instead of returning stale data
-- We can add caching later if latency becomes an issue (it won't for billing queries)
 
 ---
 
@@ -140,4 +140,48 @@ Single repo. MCP server lives at `mcp-server/`.
 - The MCP server is the only open-source component right now, but more may follow
 - One repo means one place for issues, one place for PRs
 - The root-level docs provide context that makes the MCP server code more understandable
-- If we add a Python SDK, CLI tool, or other connectors later, they slot in as sibling directories
+- If we add a CLI tool or other connectors later, they slot in as sibling directories
+
+---
+
+## 007 — Read-first tool design
+
+**Date:** 2026-03-06
+**Status:** Accepted
+
+### Context
+
+The MCP server could expose both read and write tools for all artifact types, or lean into one direction.
+
+### Decision
+
+6 read tools, 1 write tool (`create_decision`). Read-first by design.
+
+### Why
+
+- The primary use case is pulling thinking context into the IDE, not managing meter.chat from the IDE
+- Decisions, blueprints, and debates are created through rich AI conversations on meter.chat — the IDE is not the right place to author them
+- The exception is `create_decision` — developers often make implementation decisions while coding, and recording those in the decisions log is natural from the IDE
+- We can add more write tools later if demand appears (e.g., `create_blueprint`, `update_decision`)
+
+---
+
+## 008 — Search as a first-class tool
+
+**Date:** 2026-03-06
+**Status:** Accepted
+
+### Context
+
+We could rely on the list tools (`get_decisions`, `get_blueprints`, etc.) with their query parameters for all search needs, or add a dedicated cross-artifact search tool.
+
+### Decision
+
+Dedicated `search` tool that searches across all artifact types.
+
+### Why
+
+- An LLM agent often needs to find "that decision about the database schema" or "the blueprint for the auth system" without knowing which artifact type it is
+- A single search entry point is the most natural interface for an agent
+- The list tools are still useful for targeted browsing within a known artifact type
+- Search returns ranked results with type labels and snippets, making it easy for the agent to decide which artifact to fetch in full

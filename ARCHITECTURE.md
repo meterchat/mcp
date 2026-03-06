@@ -1,13 +1,13 @@
 # Architecture
 
-How Meter's open-source components are built and how they connect to the platform.
+How the MCP server connects your IDE to meter.chat.
 
 ## System overview
 
 ```
 ┌─────────────────────────────────────────────────┐
 │  Developer's Editor                              │
-│  (Cursor / Claude Code / Codex / Replit / etc.)  │
+│  (Cursor / Claude Code / Codex / Windsurf)       │
 │                                                  │
 │  ┌──────────────────────────────────┐            │
 │  │  Meter MCP Server (this repo)   │            │
@@ -19,18 +19,24 @@ How Meter's open-source components are built and how they connect to the platfor
                   │ HTTPS
                   ▼
 ┌─────────────────────────────────────────────────┐
-│  Meter API (api.meter.dev)                       │
-│  - Usage tracking                                │
-│  - Budget enforcement                            │
-│  - Model routing                                 │
-│  - Analytics                                     │
-└──────────────────┬──────────────────────────────┘
-                   │
-         ┌─────────┼─────────┐
-         ▼         ▼         ▼
-     Anthropic   OpenAI   Google
-      Claude      GPT     Gemini
+│  Meter API (api.meter.chat)                      │
+│  - Decisions                                     │
+│  - Blueprints                                    │
+│  - Debates                                       │
+│  - Search                                        │
+│  - User profile                                  │
+└─────────────────────────────────────────────────┘
+                  ▲
+                  │ also used by
+┌─────────────────────────────────────────────────┐
+│  meter.chat (the consumer app)                   │
+│  - AI chat with pay-per-thought billing          │
+│  - Debate mode, decisions log, blueprints        │
+│  - Where the thinking happens                    │
+└─────────────────────────────────────────────────┘
 ```
+
+The MCP server reads from the same API that powers meter.chat. It does not replace the consumer app — it extends it into the IDE. Users think on meter.chat, then their coding agent pulls that context while they build.
 
 ## MCP server
 
@@ -53,30 +59,50 @@ Tools are actions the agent can invoke. Each tool has a name, description, and J
 
 | Tool | Purpose |
 |------|---------|
-| `get_usage` | Check current usage and costs for a project or time period |
-| `get_balance` | Check remaining balance and budget status |
-| `get_projects` | List projects and their usage summaries |
-| `create_project` | Create a new project for usage tracking |
-| `set_budget` | Set or update a budget limit on a project |
-| `get_cost_estimate` | Estimate cost for a model call before making it |
+| `get_decisions` | List/search decisions from the decisions log |
+| `get_decision` | Fetch full detail of a single decision |
+| `get_blueprints` | List/search blueprints |
+| `get_blueprint` | Fetch full content of a single blueprint |
+| `get_debates` | List debate summaries with synthesis |
+| `search` | Full-text search across all artifact types |
+| `create_decision` | Record a new decision from IDE context |
+
+6 read tools, 1 write tool. The server is read-heavy by design — the primary value is pulling thinking context into the IDE, not managing meter.chat from the IDE.
 
 ### Resources
 
-Resources are data the agent can read without taking an action.
+Resources are data the agent can read without explicit tool invocation.
 
 | Resource | URI | Purpose |
 |----------|-----|---------|
-| Account info | `meter://account` | Current account details and plan |
-| Pricing | `meter://pricing` | Current per-model pricing table |
-| Usage summary | `meter://usage/summary` | High-level usage dashboard |
+| Recent decisions | `meter://decisions/recent` | Last 10 decisions for ambient context |
+| Recent blueprints | `meter://blueprints/recent` | Last 10 blueprints for ambient context |
+| Profile | `meter://profile` | User/workspace info and content counts |
+
+### Data model
+
+The MCP server works with three primary artifact types from meter.chat:
+
+**Decision** — a structured record of a choice made during an AI conversation.
+- title, context, options[], decision, rationale, tags[]
+- linked to blueprints and conversations
+- has a status (e.g., accepted, superseded, proposed)
+
+**Blueprint** — an architectural plan or system design generated from conversation.
+- title, content (markdown), tags[]
+- linked to related decisions
+
+**Debate** — a multi-model discussion on a topic.
+- topic, participating models[], synthesis
+- each model argues its perspective, then a synthesis is produced
 
 ### Authentication
 
-The server reads the API key from the `METER_API_KEY` environment variable. The key is passed to the Meter API as a Bearer token on every request. Keys are scoped per-account and can be rotated from the Meter dashboard.
+The server reads the API key from the `METER_API_KEY` environment variable. The key is passed to the Meter API as a Bearer token on every request. Keys are generated from the meter.chat settings page.
 
 ### Error handling
 
-- **No API key** → server starts but tools return an error prompting the user to set `METER_API_KEY`
+- **No API key** → server exits with a message pointing to meter.chat/settings/api
 - **Invalid API key** → tools return a clear "invalid key" message
 - **Network failure** → tools return the error with a retry suggestion
 - **Rate limit** → tools return the retry-after duration
@@ -86,19 +112,20 @@ The server reads the API key from the `METER_API_KEY` environment variable. The 
 ```
 mcp-server/
 ├── src/
-│   ├── index.ts          ← entry point, server setup
-│   ├── tools/            ← tool implementations
-│   │   ├── get-usage.ts
-│   │   ├── get-balance.ts
-│   │   ├── get-projects.ts
-│   │   ├── create-project.ts
-│   │   ├── set-budget.ts
-│   │   └── get-cost-estimate.ts
-│   ├── resources/        ← resource implementations
-│   │   ├── account.ts
-│   │   ├── pricing.ts
-│   │   └── usage-summary.ts
-│   └── client.ts         ← Meter API HTTP client
+│   ├── index.ts              ← entry point, server setup
+│   ├── tools/                ← tool implementations
+│   │   ├── get-decisions.ts
+│   │   ├── get-decision.ts
+│   │   ├── get-blueprints.ts
+│   │   ├── get-blueprint.ts
+│   │   ├── get-debates.ts
+│   │   ├── search.ts
+│   │   └── create-decision.ts
+│   ├── resources/            ← resource implementations
+│   │   ├── recent-decisions.ts
+│   │   ├── recent-blueprints.ts
+│   │   └── profile.ts
+│   └── client.ts             ← Meter API HTTP client
 ├── tsconfig.json
 ├── package.json
 └── README.md
@@ -107,6 +134,7 @@ mcp-server/
 ## Design principles
 
 1. **Thin client** — the MCP server does not hold state. It's a pass-through to the API.
-2. **Fail clearly** — every error message tells the user what happened and what to do.
-3. **Zero config** — one environment variable. No config files, no setup wizards.
-4. **Editor-agnostic** — works with any MCP-compatible client via stdio.
+2. **Read-heavy** — the primary value is pulling thinking context into the IDE, not pushing data back.
+3. **Fail clearly** — every error message tells the user what happened and what to do.
+4. **Zero config** — one environment variable. No config files, no setup wizards.
+5. **Editor-agnostic** — works with any MCP-compatible client via stdio.

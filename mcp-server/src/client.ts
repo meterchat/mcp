@@ -1,4 +1,4 @@
-const DEFAULT_BASE_URL = "https://api.meter.dev";
+const DEFAULT_BASE_URL = "https://api.meter.chat";
 
 export interface MeterClientConfig {
   apiKey: string;
@@ -25,7 +25,7 @@ export function createClient(config: MeterClientConfig) {
       headers: {
         Authorization: `Bearer ${config.apiKey}`,
         "Content-Type": "application/json",
-        "User-Agent": "meter-mcp-server/0.1.0",
+        "User-Agent": "meter-chat-mcp-server/0.1.0",
       },
       body: body ? JSON.stringify(body) : undefined,
     });

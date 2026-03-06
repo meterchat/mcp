@@ -4,7 +4,7 @@ Instructions for AI agents working on this repository.
 
 ## What this repo is
 
-This is the public-facing open-source repo for [Meter](https://meter.dev) — pay-per-thought AI for developers. It contains the MCP server that connects coding agents (Cursor, Claude Code, Codex, etc.) to the Meter platform.
+This is the public-facing open-source repo for [meter.chat](https://meter.chat) — an AI chat app for builders with debate mode, decisions log, and blueprints. It contains the MCP server that lets coding agents (Cursor, Claude Code, Codex, etc.) access your meter.chat thinking artifacts from your IDE.
 
 ## Repository structure
 
@@ -23,9 +23,9 @@ npm run dev    # runs with stdio, useful for testing with an MCP client
 ### Key files
 
 - `src/index.ts` — server entry point, registers all tools and resources
-- `src/client.ts` — HTTP client for the Meter API
-- `src/tools/` — one file per MCP tool
-- `src/resources/` — one file per MCP resource
+- `src/client.ts` — HTTP client for the Meter API (api.meter.chat)
+- `src/tools/` — one file per MCP tool (get-decisions, get-blueprints, search, etc.)
+- `src/resources/` — one file per MCP resource (recent-decisions, recent-blueprints, profile)
 
 ### Adding a new tool
 
@@ -45,9 +45,19 @@ Same pattern as tools, but in `src/resources/`.
 - Error messages should tell the user what happened and what to do about it
 - No comments for obvious code. Comment the "why", not the "what"
 
+## Domain context
+
+The MCP server works with three artifact types from meter.chat:
+
+- **Decisions** — structured records of choices (context, options, decision, rationale)
+- **Blueprints** — architectural plans and system designs (markdown documents)
+- **Debates** — multi-model discussions with a synthesized conclusion
+
+The server is read-heavy by design. Most tools fetch data; only `create_decision` writes back.
+
 ## Environment
 
-- `METER_API_KEY` — required for the MCP server to talk to the Meter API
+- `METER_API_KEY` — required for the MCP server to talk to api.meter.chat
 - Node.js >= 18
 
 ## Testing
@@ -59,6 +69,6 @@ npm test
 
 ## Commit style
 
-- Short, imperative messages: "add get-usage tool", "fix error handling in client"
+- Short, imperative messages: "add search tool", "fix error handling in client"
 - No conventional commit prefixes required
 - One logical change per commit when possible

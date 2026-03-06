@@ -1,53 +1,59 @@
 # Meter
 
-**Pay-per-thought AI for developers.**
+**Think with AI. Pay per thought.**
 
-Meter is the billing layer between you and AI. One account, one balance, every model — pay only for what you think.
+[meter.chat](https://meter.chat) is an AI chat app for builders. You chat with AI, run multi-model debates, record structured decisions, and generate architectural blueprints — all on a pay-per-thought basis. No subscriptions. No tiers. Just thinking.
 
-## The problem
+## What makes Meter different
 
-AI billing is fragmented. You have an OpenAI key, an Anthropic key, a Google key. Each with its own dashboard, its own credits, its own pricing page you check at 2am. You're managing vendor accounts instead of building.
+- **Debate mode** — pit models against each other on a topic and get a synthesis
+- **Decisions log** — structured records of every choice: context, options, rationale
+- **Blueprints** — architectural plans and system designs born from conversation
+- **Pay-per-thought** — no monthly fee, pay only for what you use
 
-## What Meter does
+## The MCP server
 
-Meter sits between your tools and the models. You top up once. Your tools draw from one balance. You see exactly what each thought costs, in real time, across every provider.
+This repo contains the open-source **MCP server** that bridges your meter.chat thinking into your coding workflow.
 
-- **One API key** → routes to any model (Claude, GPT, Gemini, Llama, and more)
-- **Real-time metering** → see cost per request, per session, per project
-- **Budget controls** → set limits per project, per team, per day
-- **Usage analytics** → understand where your AI spend goes
+You do your thinking on meter.chat — weighing options, debating approaches, documenting architecture. Then you switch to your IDE. Without this server, that context is gone. Your coding agent doesn't know what you decided or why.
 
-## How it works
+The MCP server fixes that. Install it in Cursor, Claude Code, Codex, or any MCP-compatible tool, and your agent can access your decisions, blueprints, and debate history while you code.
 
 ```
-Your Editor (Cursor, Claude Code, Codex, etc.)
-        ↓
-   Meter MCP Server (this repo)
-        ↓
-   Meter API (meter.dev)
-        ↓
-   AI Providers (Anthropic, OpenAI, Google, etc.)
+meter.chat (your thinking)
+     ↓ stored
+Meter API (api.meter.chat)
+     ↑ fetched by
+Meter MCP Server (this repo, runs in your IDE)
+     ↑ used by
+Your coding agent (Cursor / Claude Code / Codex)
 ```
-
-You install the MCP server. It connects your coding agent to Meter. Every AI call flows through your Meter account. You see everything.
 
 ## Quick start
 
-### 1. Get a Meter account
+### 1. Sign up at [meter.chat](https://meter.chat) and grab your API key
 
-Sign up at [meter.dev](https://meter.dev) and grab your API key.
+### 2. Add to your editor
 
-### 2. Install the MCP server
-
-```bash
-npx @anthropic-ai/meter-mcp-server
+```json
+{
+  "mcpServers": {
+    "meter": {
+      "command": "npx",
+      "args": ["-y", "@meter/mcp-server"],
+      "env": {
+        "METER_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
 ```
 
-Or see the [MCP server README](./mcp-server/README.md) for detailed setup with Cursor, Claude Code, Codex, and others.
+See the [MCP server README](./mcp-server/README.md) for editor-specific instructions.
 
-### 3. Build
+### 3. Code with context
 
-That's it. Your agent is now metered.
+Your agent can now pull your decisions, blueprints, and debates. Ask it "what did I decide about the auth system?" and it'll check your meter.chat history.
 
 ## Repository structure
 
@@ -66,23 +72,23 @@ meter/
 
 ## Philosophy
 
-We believe AI costs should be **transparent**, **controllable**, and **simple**. One key, one bill, full visibility. No surprise invoices. No hunting through dashboards.
+Your thinking should follow you into your code. Decisions made in conversation should be available when implementing. The IDE should know what you already figured out.
 
-We build in public. Our architecture decisions, our thinking, our trade-offs — all in this repo. Git is for thinking, not just code.
+We build in public. Our architecture decisions, our thinking, our trade-offs — all in this repo.
 
 ## Open source
 
-The MCP server is MIT-licensed. It is the bridge between your tools and Meter. We open-source the connector, not the platform, because the connector is more useful in your hands than ours.
+The MCP server is MIT-licensed. It is the bridge between your IDE and meter.chat. We open-source the connector, not the platform, because the connector is more useful in your hands than ours.
 
-Contributions welcome. Add a tool, improve a prompt, support a new editor. See [CLAUDE.md](./CLAUDE.md) for how to work on this repo.
+Contributions welcome. Add a tool, improve a resource, support a new editor. See [CLAUDE.md](./CLAUDE.md) for how to work on this repo.
 
 ## Links
 
-- [meter.dev](https://meter.dev) — the product
+- [meter.chat](https://meter.chat) — the product
 - [MCP server docs](./mcp-server/README.md) — get set up
 - [Architecture](./ARCHITECTURE.md) — how it's built
 - [Decisions](./DECISIONS.md) — why it's built this way
 
 ---
 
-Made by the Meter team. Pay for what you think.
+Made by the Meter team. Think with AI. Pay per thought.
