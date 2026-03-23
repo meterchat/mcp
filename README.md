@@ -2,13 +2,13 @@
 
 # Meter MCP Server
 
-**Give your coding agent the context of everything you've thought, decided, and designed.**
+**Bridge your AI thinking into your coding workflow.**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-7c3aed)](https://modelcontextprotocol.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-[meter.chat](https://meter.chat) &bull; [Quick Start](#quick-start) &bull; [Tools](#tools) &bull; [API](#api) &bull; [Architecture](ARCHITECTURE.md)
+[meter.chat](https://meter.chat) &bull; [Quick Start](#quick-start) &bull; [Tools](#tools) &bull; [Architecture](ARCHITECTURE.md)
 
 </div>
 
@@ -31,7 +31,7 @@ https://meter.chat/api/mcp  ──  hosted MCP server
 Your Agent  ──  Cursor / Claude Code / Codex / Windsurf / Lovable / Replit
 ```
 
-No install. No local server. One API key, one URL.
+> **Think in Meter. Code with context.**
 
 ---
 
@@ -188,44 +188,6 @@ Your agent can now pull your Meter thinking. Try:
 
 ---
 
-## API
-
-Your `mk_` API key works for both MCP and the Meter chat API.
-
-### MCP endpoint
-
-```
-https://meter.chat/api/mcp
-Authorization: Bearer mk_your_api_key
-```
-
-Used automatically by your IDE when configured above.
-
-### Chat API
-
-```
-POST https://meter.chat/api/v1/chat
-Authorization: Bearer mk_your_api_key
-Content-Type: application/json
-
-{
-  "messages": [{"role": "user", "content": "Hello"}],
-  "model": "anthropic/claude-sonnet-4.6"
-}
-```
-
-Returns an SSE stream:
-
-```
-data: {"type":"delta","content":"Hi","tokensOut":1}
-data: {"type":"usage","tokensIn":5,"tokensOut":50}
-data: {"type":"done"}
-```
-
-Full API docs at [meter.chat/docs](https://meter.chat/docs).
-
----
-
 ## About Meter
 
 [Meter](https://meter.chat) is the first pay-per-thought AI. Every frontier model — Claude, GPT, Gemini, Grok, DeepSeek — on a single postpaid tab. No subscriptions. No rate limits.
@@ -254,7 +216,7 @@ Contributions welcome. See [CLAUDE.md](CLAUDE.md) for AI agent instructions.
 
 <div align="center">
 
-**Think in Meter. Pay per thought.**
+**Think in Meter. Code with context.**
 
 [meter.chat](https://meter.chat)
 
