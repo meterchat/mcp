@@ -1,6 +1,6 @@
 # Architecture
 
-How the MCP server connects your IDE to meter.chat.
+How the Meter MCP server connects your IDE to your meter.chat thinking.
 
 ## System overview
 
@@ -9,22 +9,31 @@ How the MCP server connects your IDE to meter.chat.
 │  Developer's Editor                              │
 │  (Cursor / Claude Code / Codex / Windsurf)       │
 │                                                  │
-│  ┌──────────────────────────────────┐            │
-│  │  Meter MCP Server (this repo)   │            │
-│  │  - Runs locally via stdio       │            │
-│  │  - Exposes tools + resources    │            │
-│  │  - Authenticates with API key   │            │
-│  └──────────────┬───────────────────┘            │
-└─────────────────┼───────────────────────────────┘
+│  Agent sends MCP requests over HTTPS             │
+│                                                  │
+└─────────────────┬───────────────────────────────┘
                   │ HTTPS
+                  │ Authorization: Bearer mk_...
                   ▼
 ┌─────────────────────────────────────────────────┐
-│  Meter API (api.meter.chat)                      │
-│  - Decisions                                     │
-│  - Blueprints                                    │
-│  - Debates                                       │
-│  - Search                                        │
-│  - User profile                                  │
+│  Meter MCP Server                                │
+│  https://meter.chat/api/mcp                      │
+│                                                  │
+│  - Hosted on meter.chat (Next.js API route)      │
+│  - Streamable HTTP transport                     │
+│  - Authenticates via mk_ API keys                │
+│  - Queries Supabase directly                     │
+│  - 6 read-only tools                             │
+└─────────────────────────────────────────────────┘
+                  │
+                  │ reads from
+                  ▼
+┌─────────────────────────────────────────────────┐
+│  Supabase (PostgreSQL)                           │
+│  - decisions table                               │
+│  - artifacts table (blueprints)                  │
+│  - chat_sessions table (debates)                 │
+│  - mcp_keys table (auth)                         │
 └─────────────────────────────────────────────────┘
                   ▲
                   │ also used by
@@ -36,105 +45,72 @@ How the MCP server connects your IDE to meter.chat.
 └─────────────────────────────────────────────────┘
 ```
 
-The MCP server reads from the same API that powers meter.chat. It does not replace the consumer app — it extends it into the IDE. Users think on meter.chat, then their coding agent pulls that context while they build.
+The MCP server is a hosted endpoint on meter.chat. It reads from the same database that powers the consumer app. It does not replace the app — it extends it into the IDE.
 
-## MCP server
+## Transport
 
-### What is MCP?
+The MCP server uses **Streamable HTTP** transport via the MCP SDK's `WebStandardStreamableHTTPServerTransport`. It runs as a Next.js API route at `/api/mcp`.
 
-Model Context Protocol (MCP) is a standard for connecting AI agents to external tools and data sources. It defines a transport-agnostic protocol where servers expose **tools** (actions the agent can take) and **resources** (data the agent can read).
+- Handles `POST`, `GET`, and `DELETE` HTTP methods
+- No local server to install or run
+- Works with any MCP client that supports HTTP transport
+- One URL for all editors: `https://meter.chat/api/mcp`
 
-### Transport
+## Authentication
 
-The MCP server uses **stdio** transport. The editor spawns it as a child process and communicates over stdin/stdout. This means:
+API keys are generated from **Settings → API** on meter.chat.
 
-- No port management
-- No network configuration
-- Works behind firewalls and VPNs
-- One server instance per editor session
+- Keys are prefixed with `mk_` (e.g., `mk_abc123...`)
+- Passed as `Authorization: Bearer mk_...` header
+- Keys are SHA-256 hashed before storage in the `mcp_keys` table
+- Only one active key per user at a time
+- `last_used_at` is tracked on each request
+- Invalid or missing key returns 401 Unauthorized
 
-### Tools
+The same `mk_` key also works for the chat API (`POST /api/v1/chat`).
 
-Tools are actions the agent can invoke. Each tool has a name, description, and JSON Schema for its parameters.
+## Tools
 
-| Tool | Purpose |
-|------|---------|
-| `get_decisions` | List/search decisions from the decisions log |
-| `get_decision` | Fetch full detail of a single decision |
-| `get_blueprints` | List/search blueprints |
-| `get_blueprint` | Fetch full content of a single blueprint |
-| `get_debates` | List debate summaries with synthesis |
-| `search` | Full-text search across all artifact types |
-| `create_decision` | Record a new decision from IDE context |
+6 read-only tools. The server is read-only by design — the primary value is pulling thinking context into the IDE, not managing meter.chat from the IDE.
 
-6 read tools, 1 write tool. The server is read-heavy by design — the primary value is pulling thinking context into the IDE, not managing meter.chat from the IDE.
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| `get_decisions` | List/search decisions from the decisions log | `session_id?`, `query?` |
+| `get_decision` | Fetch full detail of a single decision | `id` |
+| `get_blueprints` | List/search blueprints (artifacts) | `session_id?` |
+| `get_blueprint` | Fetch full content of a single blueprint | `id` |
+| `get_debates` | List debate summaries | `limit?` (default 20) |
+| `search` | Full-text search across decisions, blueprints, and debates | `query` |
 
-### Resources
+All tools query Supabase directly, scoped to the authenticated user via `user_id`.
 
-Resources are data the agent can read without explicit tool invocation.
+## Data model
 
-| Resource | URI | Purpose |
-|----------|-----|---------|
-| Recent decisions | `meter://decisions/recent` | Last 10 decisions for ambient context |
-| Recent blueprints | `meter://blueprints/recent` | Last 10 blueprints for ambient context |
-| Profile | `meter://profile` | User/workspace info and content counts |
-
-### Data model
-
-The MCP server works with three primary artifact types from meter.chat:
+The MCP server works with three artifact types from meter.chat:
 
 **Decision** — a structured record of a choice made during an AI conversation.
-- title, context, options[], decision, rationale, tags[]
-- linked to blueprints and conversations
-- has a status (e.g., accepted, superseded, proposed)
+- title, status, choice, reasoning, category
+- versioned (version number, revisit count)
+- scoped to a workspace (session_id)
 
-**Blueprint** — an architectural plan or system design generated from conversation.
-- title, content (markdown), tags[]
-- linked to related decisions
+**Blueprint** — an architectural plan or artifact generated from conversation.
+- file_path, content (markdown), status, category
+- categories: readme, architecture, design, decisions, claude, cursorrules
 
-**Debate** — a multi-model discussion on a topic.
-- topic, participating models[], synthesis
-- each model argues its perspective, then a synthesis is produced
+**Debate** — a multi-model discussion session.
+- workspace_name, project_name
+- contains chat messages with debate traces
 
-### Authentication
+## Error handling
 
-The server reads the API key from the `METER_API_KEY` environment variable. The key is passed to the Meter API as a Bearer token on every request. Keys are generated from the meter.chat settings page.
-
-### Error handling
-
-- **No API key** → server exits with a message pointing to meter.chat/settings/api
-- **Invalid API key** → tools return a clear "invalid key" message
-- **Network failure** → tools return the error with a retry suggestion
-- **Rate limit** → tools return the retry-after duration
-
-## Directory structure
-
-```
-mcp-server/
-├── src/
-│   ├── index.ts              ← entry point, server setup
-│   ├── tools/                ← tool implementations
-│   │   ├── get-decisions.ts
-│   │   ├── get-decision.ts
-│   │   ├── get-blueprints.ts
-│   │   ├── get-blueprint.ts
-│   │   ├── get-debates.ts
-│   │   ├── search.ts
-│   │   └── create-decision.ts
-│   ├── resources/            ← resource implementations
-│   │   ├── recent-decisions.ts
-│   │   ├── recent-blueprints.ts
-│   │   └── profile.ts
-│   └── client.ts             ← Meter API HTTP client
-├── tsconfig.json
-├── package.json
-└── README.md
-```
+- **No API key / invalid key** → 401 Unauthorized JSON response
+- **Supabase query error** → tool returns error message in content
+- **All errors** are returned as MCP text content, not transport-level failures
 
 ## Design principles
 
-1. **Thin client** — the MCP server does not hold state. It's a pass-through to the API.
-2. **Read-heavy** — the primary value is pulling thinking context into the IDE, not pushing data back.
-3. **Fail clearly** — every error message tells the user what happened and what to do.
-4. **Zero config** — one environment variable. No config files, no setup wizards.
-5. **Editor-agnostic** — works with any MCP-compatible client via stdio.
+1. **Hosted, not local** — no install, no build, no local process. One URL.
+2. **Read-only** — the primary value is pulling thinking context into the IDE.
+3. **Zero config** — one API key, one URL. No config files.
+4. **Editor-agnostic** — works with any MCP client that supports HTTP transport.
+5. **Same database** — queries the same Supabase instance as meter.chat, so context is always fresh.
