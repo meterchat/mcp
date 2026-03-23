@@ -8,7 +8,7 @@
 [![MCP](https://img.shields.io/badge/MCP-compatible-7c3aed)](https://modelcontextprotocol.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-[meter.chat](https://meter.chat) &bull; [Quick Start](#quick-start) &bull; [Tools](#tools) &bull; [API](#api) &bull; [Architecture](ARCHITECTURE.md)
+[meter.chat](https://meter.chat) &bull; [Quick Start](#quick-start) &bull; [Tools](#tools) &bull; [Architecture](ARCHITECTURE.md)
 
 </div>
 
@@ -185,19 +185,6 @@ Your agent can now pull your Meter thinking. Try:
 | `get_blueprint` | Fetch the full markdown content of a blueprint. |
 | `get_debates` | Browse debate summaries with multi-model synthesis. |
 | `search` | Full-text search across decisions, blueprints, and debates. |
-
----
-
-## API
-
-Your `mk_` API key works for both the MCP server and the Meter streaming chat API.
-
-| Endpoint | Purpose |
-|----------|---------|
-| `https://meter.chat/api/mcp` | MCP server — used automatically by your IDE |
-| `POST /api/v1/chat` | Streaming chat — use any model programmatically |
-
-See [meter.chat/docs](https://meter.chat/docs) for full API reference.
 
 ---
 
