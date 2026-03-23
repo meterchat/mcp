@@ -1,39 +1,56 @@
-# Meter
+<div align="center">
 
-**Pay per thought AI.**
+# Meter MCP Server
 
-[meter.chat](https://meter.chat) is an AI chat app for builders. You chat with AI, run multi-model debates, record structured decisions, and generate architectural blueprints — all on a pay-per-thought basis. No subscriptions. No tiers. Just freedom of thought.
+**Bridge your AI thinking into your coding workflow.**
 
-## What makes Meter different
+[![npm version](https://img.shields.io/npm/v/@meter/mcp-server?color=cb3837&label=npm&logo=npm&logoColor=white)](https://www.npmjs.com/package/@meter/mcp-server)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![MCP](https://img.shields.io/badge/MCP-compatible-7c3aed?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+)](https://modelcontextprotocol.io)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-- **Debate mode** — pit models against each other on a topic and get a synthesis
-- **Decisions log** — structured records of every choice: context, options, rationale
-- **Blueprints** — architectural plans and system designs born from conversation
-- **Pay-per-thought** — no monthly fee, pay only for what you use
+[meter.chat](https://meter.chat) &bull; [Quick Start](#quick-start) &bull; [Tools](#tools) &bull; [Resources](#resources) &bull; [Architecture](ARCHITECTURE.md)
 
-## The MCP server
+</div>
 
-This repo contains the open-source **MCP server** that bridges your meter.chat thinking into your coding workflow.
+---
 
-You do your thinking on meter.chat — weighing options, debating approaches, documenting architecture. Then you switch to your IDE. Without this server, that context is gone. Your coding agent doesn't know what you decided or why.
+## What is this?
 
-The MCP server fixes that. Install it in Cursor, Claude Code, Codex, or any MCP-compatible tool, and your agent can access your decisions, blueprints, and debate history while you code.
+[Meter](https://meter.chat) is a pay-per-thought AI workspace where you chat with every frontier model, run multi-model debates, log structured decisions, and generate architectural blueprints — all on a single postpaid tab.
+
+This repo contains the **MCP server** that makes your Meter thinking available inside your IDE. Install it in Cursor, Claude Code, Codex, or Windsurf, and your coding agent gets access to your decisions, blueprints, and debate history while you build.
 
 ```
-meter.chat (your thinking)
-     ↓ stored
-Meter API (api.meter.chat)
-     ↑ fetched by
-Meter MCP Server (this repo, runs in your IDE)
-     ↑ used by
-Your coding agent (Cursor / Claude Code / Codex)
+meter.chat  ──  think, debate, decide
+    │
+    ▼
+Meter API  ──  stores your decisions, blueprints, debates
+    ▲
+    │
+MCP Server  ──  this repo, runs locally in your editor
+    ▲
+    │
+Your Agent  ──  Cursor / Claude Code / Codex / Windsurf
 ```
 
-## Quick start
+> **Think in Meter. Code with context.**
 
-### 1. Sign up at [meter.chat](https://meter.chat) and grab your API key
+---
+
+## Quick Start
+
+### 1. Get your API key
+
+Sign up at [meter.chat](https://meter.chat) and copy your key from **Settings → API**.
 
 ### 2. Add to your editor
+
+<details>
+<summary><strong>Cursor</strong></summary>
+
+Open **Settings → MCP Servers → Add Server**:
 
 ```json
 {
@@ -49,44 +66,220 @@ Your coding agent (Cursor / Claude Code / Codex)
 }
 ```
 
-See the [MCP server README](./mcp-server/README.md) for editor-specific instructions.
+</details>
 
-### 3. Code with context and memory
+<details>
+<summary><strong>Claude Code</strong></summary>
 
-Your agent can now pull your decisions, blueprints, and debates. Ask it "what did I decide about the auth system?" and it'll check your meter.chat history.
-
-## Repository structure
-
-```
-meter/
-├── README.md            ← you are here
-├── ARCHITECTURE.md      ← system design and technical decisions
-├── DECISIONS.md         ← why we built it this way
-├── CLAUDE.md            ← instructions for AI agents working on this repo
-├── LICENSE              ← MIT
-└── mcp-server/          ← the open-source MCP server
-    ├── README.md        ← setup instructions for every supported editor
-    ├── src/             ← TypeScript source
-    └── package.json
+```bash
+claude mcp add meter -- npx -y @meter/mcp-server
 ```
 
-## Philosophy
+Set your API key:
 
-Your code should follow your thinking. Too many AI coded apps end up with technical debt because they jump to building before thiking. Decisions made in conversation should be available when implementing. The IDE should know what you already figured out.
+```bash
+export METER_API_KEY="your-api-key"
+```
 
-## Open source
+Or add to `~/.claude/claude_desktop_config.json`:
 
-The MCP server is MIT-licensed. It is the bridge between your IDE and meter.chat. We open-source the connector, not the platform, because the connector is more useful in your hands than ours.
+```json
+{
+  "mcpServers": {
+    "meter": {
+      "command": "npx",
+      "args": ["-y", "@meter/mcp-server"],
+      "env": {
+        "METER_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
 
-Contributions welcome. Add a tool, improve a resource, support a new editor. See [CLAUDE.md](./CLAUDE.md) for how to work on this repo.
+</details>
 
-## Links
+<details>
+<summary><strong>OpenAI Codex</strong></summary>
 
-- [meter.chat](https://meter.chat) — the product
-- [MCP server docs](./mcp-server/README.md) — get set up
-- [Architecture](./ARCHITECTURE.md) — how it's built
-- [Decisions](./DECISIONS.md) — why it's built this way
+Add to your Codex MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "meter": {
+      "command": "npx",
+      "args": ["-y", "@meter/mcp-server"],
+      "env": {
+        "METER_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Windsurf</strong></summary>
+
+Open **Settings → MCP → Add Server** with the same JSON config as Cursor.
+
+</details>
+
+<details>
+<summary><strong>Any MCP-compatible client</strong></summary>
+
+The server uses **stdio** transport. Spawn it as a child process:
+
+```bash
+METER_API_KEY="your-api-key" npx @meter/mcp-server
+```
+
+</details>
+
+### 3. Start coding with context
+
+Your agent can now pull your Meter thinking. Try asking:
+
+- *"What did I decide about the auth system?"*
+- *"Show me the blueprint for the API architecture"*
+- *"Search my decisions for anything about database choice"*
+- *"Record a decision: we're using Postgres because..."*
 
 ---
 
-Made by the Meter team. Think in Meter. Pay per thought.
+## Tools
+
+7 tools — 6 read, 1 write. Read-heavy by design: the primary value is pulling thinking context into the IDE.
+
+| Tool | Description |
+|------|-------------|
+| `get_decisions` | List and search your decisions log |
+| `get_decision` | Fetch full detail of a single decision (context, options, rationale) |
+| `get_blueprints` | List and search your architectural blueprints |
+| `get_blueprint` | Fetch the full markdown content of a blueprint |
+| `get_debates` | List debate summaries with multi-model synthesis |
+| `search` | Full-text search across all artifact types |
+| `create_decision` | Record a new decision from your IDE |
+
+## Resources
+
+Ambient context your agent can read automatically.
+
+| Resource | URI | Description |
+|----------|-----|-------------|
+| Recent decisions | `meter://decisions/recent` | Last 10 decisions |
+| Recent blueprints | `meter://blueprints/recent` | Last 10 blueprints |
+| Profile | `meter://profile` | Account info and content counts |
+
+---
+
+## How it works
+
+The MCP server is a thin, stateless client. It reads from the same API that powers [meter.chat](https://meter.chat) — it doesn't replace the app, it extends it into the IDE.
+
+- **Transport:** stdio (spawned as a child process by your editor)
+- **Auth:** Bearer token via `METER_API_KEY` environment variable
+- **State:** None. Every request hits the Meter API directly.
+- **Errors:** Clear messages — invalid key, rate limit with retry-after, network failures with suggestions
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design.
+
+---
+
+## Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `METER_API_KEY` | Yes | Your API key from [meter.chat/settings](https://meter.chat/settings/api) |
+| `METER_API_URL` | No | Override API base URL (default: `https://api.meter.chat`) |
+
+---
+
+## Development
+
+```bash
+git clone https://github.com/meterchat/mcp.git
+cd mcp/mcp-server
+npm install
+npm run build
+```
+
+Run locally:
+
+```bash
+METER_API_KEY="your-key" npm start
+```
+
+Type-check:
+
+```bash
+npm run typecheck
+```
+
+### Project structure
+
+```
+mcp-server/
+├── src/
+│   ├── index.ts           ← Entry point, server setup
+│   ├── client.ts          ← Meter API HTTP client
+│   ├── tools/             ← Tool implementations
+│   │   ├── get-decisions.ts
+│   │   ├── get-decision.ts
+│   │   ├── get-blueprints.ts
+│   │   ├── get-blueprint.ts
+│   │   ├── get-debates.ts
+│   │   ├── search.ts
+│   │   └── create-decision.ts
+│   └── resources/         ← Resource implementations
+│       ├── recent-decisions.ts
+│       ├── recent-blueprints.ts
+│       └── profile.ts
+├── package.json
+└── tsconfig.json
+```
+
+---
+
+## Contributing
+
+Contributions welcome. Some ideas:
+
+- Add a new tool (e.g., `create_blueprint`, `update_decision`)
+- Improve error messages or retry logic
+- Add editor-specific setup guides
+- Write tests
+
+See [CLAUDE.md](CLAUDE.md) for AI agent instructions if you're contributing with Claude Code or Cursor.
+
+---
+
+## About Meter
+
+[Meter](https://meter.chat) is the first pay-per-thought AI. Every frontier model — Claude, GPT, Gemini, Grok, DeepSeek — on a single postpaid tab. No subscriptions. No rate limits. Multi-tier routing across providers.
+
+Three core primitives:
+
+1. **Pay-per-thought routing** — Every model, one bill. Configurable spend limits. Automatic fallback across providers.
+2. **Structured debates** — Pit models against each other in a 4-phase adversarial framework. Three models from three labs attack each other's logic.
+3. **Agent Spec Kit** — Synthesize decisions and debates into artifacts your coding agent needs (`ARCHITECTURE.md`, `DECISIONS.md`, `CLAUDE.md`, `.cursorrules`), committed directly to GitHub.
+
+This MCP server is the bridge. You think in Meter. Your agent codes with that context.
+
+---
+
+## License
+
+[MIT](LICENSE)
+
+---
+
+<div align="center">
+
+**Think in Meter. Pay per thought.**
+
+[meter.chat](https://meter.chat)
+
+</div>
